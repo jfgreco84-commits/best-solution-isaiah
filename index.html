@@ -876,6 +876,13 @@ function rHome(){
   const upDays=upcomingShows.reduce((t,sh)=>t+(sh.numDays||1),0);
   const upCommitted=upcomingShows.reduce((t,sh)=>t+(sh.boothCost||0)+(sh.lodging||0)+((sh.showExpenses||[]).reduce((a,e)=>a+(parseFloat(e.amount)||0),0)),0);
   let html='';
+  // Signed-out banner: stops the "where did my data go" scare on a fresh browser/device
+  if(typeof _cloudUser!=='undefined'&&!_cloudUser){
+    html+=`<div class="card" style="border:1px solid var(--goldbd);background:rgba(255,215,0,0.07);margin-bottom:10px;cursor:pointer" onclick="go('settings')">
+      <div style="font-weight:800;color:var(--gold);font-size:13px">☁️ Not signed in to cloud sync</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">If your shows and money look missing or wrong on this device, they are SAFE in the cloud. Tap here, then Sign In, and everything loads back.</div>
+    </div>`;
+  }
 
   // ---- DASHBOARD — completed-show performance (headline Sales Volume + Gross Profit, Net Profit at bottom), then a separate Upcoming/Future block ----
   const G='var(--green)',R='var(--red)',AMBER='#FFB300',BLUE='var(--blue)',BLUEBD='rgba(79,195,247,0.32)',GB='var(--greenbd)',RB='var(--redbd)';
@@ -3892,7 +3899,7 @@ async function cloudInit(){
   if(!sb)return;
   try{
     const{data:{session}}=await sb.auth.getSession();
-    if(session&&session.user){_cloudUser=session.user;setSync('syncing');await cloudHydrate();}
+    if(session&&session.user){_cloudUser=session.user;setSync('syncing');await cloudHydrate();renderCur();}
   }catch(e){console.warn('cloudInit',e);}
 }
 async function cloudSignIn(){
